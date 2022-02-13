@@ -10,7 +10,7 @@
 
 from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
     QMetaObject, QObject, QPoint, QRect,
-    QSize, QTime, QUrl, Qt)
+    QSize, QTime, QUrl, Qt, QThread)
 from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
@@ -68,8 +68,13 @@ class Ui_MainWindow(object):
 
         #COM serial view
         self.ComSerialOutput = QTextEdit(self.tab2)
-        self.ComSerialOutput.setGeometry(QRect(10, 10, 770, 550))
+        self.ComSerialOutput.setGeometry(QRect(10, 10, 770, 500))
         self.ComSerialOutput.setReadOnly(True)
+
+        #COM serial clear button
+        self.ComSerialClearButton = QPushButton(self.tab2)
+        self.ComSerialClearButton.setGeometry(QRect(10, 520, 120, 30))
+        self.ComSerialClearButton.setObjectName(u"SerialClearButton")
 
         self.label = QLabel(self.centralwidget)
         self.label.setObjectName(u"label")
@@ -98,9 +103,13 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"Live Telemetry", None))
         self.ConnectButton.setText(QCoreApplication.translate("MainWindow", u"Connect", None))
+        self.ComSerialClearButton.setText(QCoreApplication.translate("MainWindow", u"Clear COM viewer", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
         self.pushButton.setText(QCoreApplication.translate("MainWindow", u"PushButton", None))
         self.ComPortLabel.setText(QCoreApplication.translate("MainWindow", u"COM Port:", None))
         self.ComBaudLabel.setText(QCoreApplication.translate("MainWindow", u"Baud Rate:", None))
     # retranslateUi
 
+#class WorkerThread(QThread):
+   # def run(self):
+        #if()

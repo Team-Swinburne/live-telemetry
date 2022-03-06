@@ -181,11 +181,28 @@ Item {
     Component.onCompleted: {
             //var MotorTempSeries = temperatureGraph.createSeries(ChartView.SeriesTypeSpline,"Motor Temp",axisX,axisY)
             //var McTempSeries = temperatureGraph.createSeries(ChartView.SeriesTypeSpline,"MC Temp",axisX,axisY)
-            var BattTempSeries = temperatureGraph.createSeries(ChartView.SeriesTypeSpline,"Accumulator Temp",axisX,axisY)
+            var BattTempSeries = temperatureGraph.createSeries(ChartView.SeriesTypeLine,"Accumulator Temp",axisX,axisY)
 
-            var throttleSeries = pedelGraph.createSeries(ChartView.SeriesTypeSpline,"R Temp",axisX,axisY)
+            //var a = graphUpdate.update()
+            //var throttleSeries = pedelGraph.createSeries(ChartView.SeriesTypeSpline,"R Temp",axisX,axisY)
             //miTimer.start()
         }
+
+    Connections {
+        target: graphBridge
+        function onAddPoint(x,y) {
+            temperatureGraph.series(0).append(x,y)
+            var count = temperatureGraph.series(0).count
+            console.log(count)
+            if (count > 499) {
+                //temperatureGraph.series(0).remove(0)
+            }
+            if (x > axisX.max) {
+                axisX.max = x;
+            }
+        }
+    }
+
 }
 
 //ChartView {

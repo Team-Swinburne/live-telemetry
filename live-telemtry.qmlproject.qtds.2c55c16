@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtDesignStudio 2.3.1, 2022-03-06T21:28:09. -->
+<!-- Written by QtDesignStudio 2.3.1, 2022-03-03T20:08:22. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
-  <value type="QByteArray">{186d26a6-503a-487d-9e65-f5c439120d93}</value>
+  <value type="QByteArray">{2c55c164-b128-4509-9f7c-12a25cee5efe}</value>
  </data>
  <data>
   <variable>ProjectExplorer.Project.ActiveTarget</variable>
@@ -131,7 +131,8 @@
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">QmlProjectManager.QmlRunConfiguration.Qml</value>
     <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey"></value>
     <value type="QString" key="QmlProjectManager.QmlRunConfiguration.LastUsedLanguage">en</value>
-    <value type="QString" key="QmlProjectManager.QmlRunConfiguration.MainScript">CurrentFile</value>
+    <value type="QString" key="QmlProjectManager.QmlRunConfiguration.MainScript">MainWindow.qml</value>
+    <value type="int" key="QmlProjectManager.kit">0</value>
     <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
     <value type="bool" key="RunConfiguration.UseQmlDebugger">false</value>

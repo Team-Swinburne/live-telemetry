@@ -17,7 +17,7 @@ class GraphBridge(QObject):
         QObject.__init__(self)
 
         self.timer = QTimer()
-        self.timer.setInterval(10)  # msecs 100 = 1/10th sec
+        self.timer.setInterval(20)  # msecs 100 = 1/10th sec
         self.timer.timeout.connect(self.update)
         self.timer.start()
         self.count = 0
@@ -27,7 +27,7 @@ class GraphBridge(QObject):
     def update(self) :
         
         self.count = self.count+1
-        print(self.count)
+        #print(self.count)
         x = random.uniform(0,100)
         y = random.uniform(0,100)
         self.addPoint.emit(self.count,y)

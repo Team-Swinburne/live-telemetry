@@ -13,7 +13,7 @@ Window {
 
     Timer{
         id: miTimer
-        interval: 10  //update frequency = 100Hz
+        interval: 20  //update frequency = 100Hz
         running: true
         repeat: true
         onTriggered: {

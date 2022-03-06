@@ -52,7 +52,7 @@ Item {
                 ValueAxis {
                                 id: axisX
                                 min:0
-                                max:500
+                                max:200
 
                             }
 
@@ -193,12 +193,12 @@ Item {
         function onAddPoint(x,y) {
             temperatureGraph.series(0).append(x,y)
             var count = temperatureGraph.series(0).count
-            console.log(count)
-            if (count > 499) {
-                //temperatureGraph.series(0).remove(0)
+            if (count > 200) {
+                temperatureGraph.series(0).remove(0)
             }
             if (x > axisX.max) {
                 axisX.max = x;
+                axisX.min = temperatureGraph.series(0).at(0).x
             }
         }
     }

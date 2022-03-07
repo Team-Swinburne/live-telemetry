@@ -1,42 +1,48 @@
-from PySide6 import QtWidgets, QtCore
-from pyqtgraph import PlotWidget, plot
+"""
+Various methods of drawing scrolling plots.
+"""
+
+from time import perf_counter
+
+import numpy as np
+
 import pyqtgraph as pg
-import sys  # We need sys so that we can pass argv to QApplication
-import os
-from random import randint
 
-class MainWindow(QtWidgets.QMainWindow):
-
-    def __init__(self, *args, **kwargs):
-        super(MainWindow, self).__init__(*args, **kwargs)
-
-        self.graphWidget = pg.PlotWidget()
-        self.setCentralWidget(self.graphWidget)
-
-        self.x = list(range(100))  # 100 time points
-        self.y = [randint(0,100) for _ in range(100)]  # 100 data points
-
-        self.graphWidget.setBackground('w')
-
-        pen = pg.mkPen(color=(255, 0, 0))
-        self.data_line =  self.graphWidget.plot(self.x, self.y, pen=pen)
-
-        self.timer = QtCore.QTimer()
-        self.timer.setInterval(10)
-        self.timer.timeout.connect(self.update_plot_data)
-        self.timer.start()
-
-    def update_plot_data(self):
-        self.x = self.x[1:]  # Remove the first y element.
-        self.x.append(self.x[-1] + 1)  # Add a new value 1 higher than the last.
-
-        self.y = self.y[1:]  # Remove the first
-        self.y.append(randint(0,100))  # Add a new random value.
-
-        self.data_line.setData(self.x, self.y)  # Update the data.
+win = pg.GraphicsLayoutWidget(show=True)
+win.setWindowTitle('pyqtgraph example: Scrolling Plots')
 
 
-app = QtWidgets.QApplication(sys.argv)
-w = MainWindow()
-w.show()
-sys.exit(app.exec())
+# 1) Simplest approach -- update data in the array such that plot appears to scroll
+#    In these examples, the array size is fixed.
+p1 = win.addPlot()
+p2 = win.addPlot()
+data1 = np.random.normal(size=300)
+curve1 = p1.plot(data1)
+curve2 = p2.plot(data1)
+ptr1 = 0
+def update1():
+    global data1, ptr1
+    data1[:-1] = data1[1:]  # shift data in the array one sample left
+                            # (see also: np.roll)
+    data1[-1] = np.random.normal()
+    curve1.setData(data1)
+    
+    ptr1 += 1
+    curve2.setData(data1)
+    curve2.setPos(ptr1, 0)
+    
+
+# 2) Allow data to accumulate. In these examples, the array doubles in length
+#    whenever it is full. 
+
+
+
+# update all plots
+def update():
+    update1()
+timer = pg.QtCore.QTimer()
+timer.timeout.connect(update)
+timer.start(20)
+
+if __name__ == '__main__':
+    pg.exec()

@@ -1,5 +1,6 @@
 # Main dashboard of the Telemetry Software
 from pickle import TRUE
+from re import X
 import sys
 import os
 from turtle import right
@@ -7,8 +8,9 @@ from PySide6.QtCore import *
 from PySide6.QtGui import *
 from PySide6.QtWidgets import *
 from PySide6.QtCharts import *
-
-
+import pyqtgraph as pg
+import numpy as np
+from random import randint
 
 class Color(QWidget):
 
@@ -28,74 +30,85 @@ class MainDash(QWidget):
     def __init__(self):
         super().__init__()
 
+        #init data
+        self.data = {}
+        self.data["Accumulator Temp"] = [0] * 300
+        self.data["Motor Temp"] = [0] * 300
+        self.data["MC Temp"] = [0] * 300
+        self.data["Accumulator Voltage"] = 0
+        self.data["Brake"] = [0] * 300
+        self.data["Throttle"] = [0] * 300
+
+        #init curves
+        self.curves = {}
+
         #self.container = QFrame()
         #self.container.setObjectName("container")
-        #self.container.setStyleSheet("#container { background-color : #222}")
+        self.setStyleSheet("background-color : #222;")
         self.layout = QHBoxLayout()
 
         # Right panel
+        
         self.rightPane = QVBoxLayout()
         self.accumulatorVoltageBar = QProgressBar()
         self.accumulatorVoltageBar.setOrientation(Qt.Vertical)
+        self.accumulatorVoltageBar.setMaximum(600)
+        self.accumulatorVoltageBar.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.accumulatorText = QLabel("Accumulator Voltage")
+        self.accumulatorText.setStyleSheet("color: #fff;")
+
+        font = self.accumulatorText.font()
+        font.setPointSize(10)
+        self.accumulatorText.setFont(font)
         self.accumulatorVoltage = QLabel("400V")
+        self.accumulatorVoltage.setStyleSheet("color: #fff;")
+        self.accumulatorVoltage.setFont(font)
         # adding widget
         self.rightPane.addWidget(self.accumulatorText,alignment=Qt.AlignHCenter)
         self.rightPane.addWidget(self.accumulatorVoltageBar,alignment=Qt.AlignHCenter)
         self.rightPane.addWidget(self.accumulatorVoltage,alignment=Qt.AlignHCenter)
-        # self.rightPane.addWidget(Color("red"))
-        # self.rightPane.addWidget(Color("blue"))
-        # self.rightPane.addWidget(Color("green"))
        
+
         # Top-left pannel
         self.topPane = QVBoxLayout()
-        #char1
-        self.chart1 = QChart()
-        self.chart_view = QChartView(self.chart1)
-        self.chart_view.setRenderHint(QPainter.Antialiasing)
-        self.dataSeries = QLineSeries()
-        self.dataSeries.append(0,4)
-        self.dataSeries.append(4,8)
-        self.chart1.addSeries(self.dataSeries)
-        #chart2
-        self.chart2 = QChart()
-        self.chart_view1 = QChartView(self.chart2)
-        self.chart_view1.setRenderHint(QPainter.Antialiasing)
-        self.dataSeries = QLineSeries()
-        self.dataSeries.append(0,4)
-        self.dataSeries.append(4,8)
-        self.chart2.addSeries(self.dataSeries)
-        #chart 3
-        self.chart3 = QChart()
-        self.chart_view3 = QChartView(self.chart3)
-        self.chart_view3.setRenderHint(QPainter.Antialiasing)
-        self.dataSeries = QLineSeries()
-        self.dataSeries.append(0,4)
-        self.dataSeries.append(4,8)
-        self.chart3.addSeries(self.dataSeries)
+
+        #main chart for temperature, using pyqtgraph for performance
+        self.tempGraph = pg.PlotWidget(enableMenu = False) #disable mouse interaction
+        self.tempGraph.setBackground("#222")
+        self.tempGraph.setMouseEnabled(x=False,y=False)
+        self.tempGraph.setYRange(-5,85,padding=0)
+        self.tempGraph.addLegend()
+
+        self.curves["Accumulator Temp"]   =  self.tempGraph.plot(self.data["Accumulator Temp"],
+                                                pen='y',
+                                                name="Accumulator Temp")
+        self.curves["Motor Temp"]          =  self.tempGraph.plot(self.data["Motor Temp"],
+                                                pen='g',
+                                                name="Motor Temp")
+        self.curves["MC Temp"]            =  self.tempGraph.plot(self.data["MC Temp"],
+                                                pen='c',
+                                                name="MC Temp")                                
+       
         # adding widget
-        self.topPane.addWidget(self.chart_view,1)
-        self.topPane.addWidget(self.chart_view1,1)
-        self.topPane.addWidget(self.chart_view3,1)
-        # self.topPane.addWidget(Color("yellow"))
-        # self.topPane.addWidget(Color("black"))
-        # self.topPane.addWidget(Color("green"))
+        self.topPane.addWidget(self.tempGraph,1)
         
         # Bottom panel
         self.bottomPane = QHBoxLayout()
-        self.toggle = PyToggle()
-        self.bottomPane.addWidget(self.toggle)
+
+        # Brake and Throttle graph
+        self.pedalGraph = pg.PlotWidget(enableMenu = False)
+        self.pedalGraph.setMouseEnabled(x=False,y=False)
+        self.pedalGraph.setYRange(-10,110,padding=0)
+        self.pedalGraph.addLegend()
+        #self.pedalGraph.setYRange(0, 50, padding=0)
+        self.curves["Throttle"]  =   self.pedalGraph.plot(self.data["Throttle"],
+                                                    pen='b',
+                                                    name="Throttle")
+        self.curves["Brake"]     =   self.pedalGraph.plot(self.data["Brake"],
+                                                    pen='r',
+                                                    name="Brake")
         
-        
-        #throttle bar
-        self.throttle = QProgressBar()
-        self.throttle.setOrientation(Qt.Vertical)
-        
-        #brake bar
-        self.brake = QProgressBar()
-        self.brake.setOrientation(Qt.Vertical)
-        
-        #
+        #gg diagram
         self.ggDiagram = QPolarChart()
 
         self.dataSeries2 = QLineSeries()
@@ -127,24 +140,34 @@ class MainDash(QWidget):
         self.ggDiagramView = QChartView(self.ggDiagram)
         self.ggDiagramView.setRenderHint(QPainter.Antialiasing)
 
-        self.bottomPane.addWidget(self.brake)
-        self.bottomPane.addWidget(self.throttle)
+        self.bottomPane.addWidget(self.pedalGraph)
         self.bottomPane.addWidget(self.ggDiagramView)
 
         # Left pane - containting the top and bottom pane as well
         self.leftPane = QVBoxLayout()
-        self.leftPane.addLayout(self.topPane,2)
-        self.leftPane.addLayout(self.bottomPane,1)
+        self.leftPane.addLayout(self.topPane,3)
+        self.leftPane.addLayout(self.bottomPane,2)
 
         # Adding to the main layout
-        self.layout.addLayout(self.leftPane,5)
+        self.layout.addLayout(self.leftPane,6)
         self.layout.addLayout(self.rightPane,1)
-        
-        #self.toggle = PyToggle()
-        #self.layout.addWidget(self.toggle, Qt.AlignCenter, Qt.AlignCenter)
 
         self.setLayout(self.layout)
-        #self.show()
+    
+    def updateData(self,key,value):
+        #self.x = self.x[1:]  # Remove the first y element.
+        #self.x.append(self.x[-1] + 1)  # Add a new value 1 higher than the last.
+        #self.x += 1
+        if (key=="Accumulator Voltage"):
+            self.accumulatorVoltageBar.setValue(value)
+            self.accumulatorVoltage.setText(str(value) + " V")
+        else:
+            self.data[key] = self.data[key][1:]    
+            self.data[key].append(value)
+            self.curves[key].setData(self.data[key])
+        # self.accumulatorTempCurve.  # Update the data.
+        # self.accumulatorTempCurve.setData(self.data["Accumulator Temp"])
+        #self.data_line1.setPos(self.x,0)
 
 # if run as a standalone app
 if __name__ == "__main__":

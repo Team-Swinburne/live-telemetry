@@ -1,4 +1,4 @@
-# 
+# main.py
 import sys
 import os
 from PySide6.QtCore import *
@@ -7,6 +7,7 @@ from PySide6.QtWidgets import *
 from PySide6.QtCharts import *
 
 from ui import MainDash, dashboard
+from random import randint
 
 class Color(QWidget):
 
@@ -27,22 +28,36 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Live Telemtry")
 
         self.container = QFrame()
-        #self.container.setObjectName("container")
-        #self.container.setStyleSheet("#container { background-color : #222}")
+        self.container.setObjectName("container")
+        self.container.setStyleSheet("#container { background-color : #222}")
         
         self.tabs = QTabWidget()
         self.tabs.setTabPosition(QTabWidget.North)
         self.tabs.setMovable(True)
 
-        for n, color in enumerate(["red", "green", "blue", "yellow"]):
-            self.tabs.addTab(Color(color), color)
-        dashboard = MainDash()
-        self.tabs.addTab(dashboard,"Dashboard")
+        self.dashboard = MainDash()
+        self.tabs.addTab(self.dashboard,"Dashboard")
 
-        #self.container.setLayout(self.layout)
-        self.setCentralWidget(self.tabs)
+        self.tabs.setStyleSheet("background-color : #222;")
+
+        self.layout = QVBoxLayout()
+        self.layout.addWidget(self.tabs)
+        self.container.setLayout(self.layout)
+        self.setCentralWidget(self.container)
+
+        self.timer = QTimer()
+        self.timer.setInterval(10)
+        self.timer.timeout.connect(self.update)
+        self.timer.start()
 
         self.show()
+    def update(self):
+        self.dashboard.updateData("Accumulator Temp",randint(0,60))
+        self.dashboard.updateData("Motor Temp",randint(2,50))
+        self.dashboard.updateData("MC Temp",randint(0,60))
+        self.dashboard.updateData("Throttle",randint(0,60))
+        self.dashboard.updateData("Brake",randint(0,60))
+        self.dashboard.updateData("Accumulator Voltage",randint(0,600))
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

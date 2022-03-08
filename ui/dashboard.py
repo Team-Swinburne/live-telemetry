@@ -1,5 +1,5 @@
 # Main dashboard of the Telemetry Software
-from pickle import TRUE
+from pickle import FALSE, TRUE
 from re import X
 import sys
 import os
@@ -11,6 +11,7 @@ from PySide6.QtCharts import *
 import pyqtgraph as pg
 import numpy as np
 from random import randint
+import qdarktheme
 
 class Color(QWidget):
 
@@ -42,30 +43,34 @@ class MainDash(QWidget):
         #init curves
         self.curves = {}
 
-        #self.container = QFrame()
-        #self.container.setObjectName("container")
-        self.setStyleSheet("background-color : #222;")
+        #init layout
         self.layout = QHBoxLayout()
-
-        # Right panel
-        
         self.rightPane = QVBoxLayout()
+
+        #accumulator voltage bar
         self.accumulatorVoltageBar = QProgressBar()
         self.accumulatorVoltageBar.setOrientation(Qt.Vertical)
+        self.accumulatorVoltageBar.setSizePolicy(QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding))
         self.accumulatorVoltageBar.setMaximum(600)
-        self.accumulatorVoltageBar.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.accumulatorText = QLabel("Accumulator Voltage")
-        self.accumulatorText.setStyleSheet("color: #fff;")
+        self.accumulatorVoltageBar.setTextVisible(False)
 
-        font = self.accumulatorText.font()
-        font.setPointSize(10)
-        self.accumulatorText.setFont(font)
+        self.accumulatorText = QLabel("Accumulator")
+        self.font = self.accumulatorText.font()
+        self.font.setPointSize(12)
+        self.accumulatorText.setFont(self.font)
+        
         self.accumulatorVoltage = QLabel("400V")
-        self.accumulatorVoltage.setStyleSheet("color: #fff;")
-        self.accumulatorVoltage.setFont(font)
+        self.accumulatorVoltage.adjustSize()
+        #self.accumulatorVoltage.setStyleSheet("color: #fff;")
+        self.accumulatorVoltage.setFont(self.font)
         # adding widget
+
+        self.progressBar = QProgressBar()
+        sizePolicy1 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+
         self.rightPane.addWidget(self.accumulatorText,alignment=Qt.AlignHCenter)
-        self.rightPane.addWidget(self.accumulatorVoltageBar,alignment=Qt.AlignHCenter)
+        self.rightPane.addWidget(self.accumulatorVoltageBar)
         self.rightPane.addWidget(self.accumulatorVoltage,alignment=Qt.AlignHCenter)
        
 
@@ -99,8 +104,8 @@ class MainDash(QWidget):
         self.pedalGraph = pg.PlotWidget(enableMenu = False)
         self.pedalGraph.setMouseEnabled(x=False,y=False)
         self.pedalGraph.setYRange(-10,110,padding=0)
+        self.pedalGraph.setBackground("#222")
         self.pedalGraph.addLegend()
-        #self.pedalGraph.setYRange(0, 50, padding=0)
         self.curves["Throttle"]  =   self.pedalGraph.plot(self.data["Throttle"],
                                                     pen='b',
                                                     name="Throttle")
@@ -141,7 +146,7 @@ class MainDash(QWidget):
         self.ggDiagramView.setRenderHint(QPainter.Antialiasing)
 
         self.bottomPane.addWidget(self.pedalGraph)
-        self.bottomPane.addWidget(self.ggDiagramView)
+        #self.bottomPane.addWidget(self.ggDiagramView)
 
         # Left pane - containting the top and bottom pane as well
         self.leftPane = QVBoxLayout()
@@ -149,8 +154,8 @@ class MainDash(QWidget):
         self.leftPane.addLayout(self.bottomPane,2)
 
         # Adding to the main layout
-        self.layout.addLayout(self.leftPane,6)
-        self.layout.addLayout(self.rightPane,1)
+        self.layout.addLayout(self.leftPane)
+        self.layout.addLayout(self.rightPane)
 
         self.setLayout(self.layout)
     
@@ -161,6 +166,8 @@ class MainDash(QWidget):
         if (key=="Accumulator Voltage"):
             self.accumulatorVoltageBar.setValue(value)
             self.accumulatorVoltage.setText(str(value) + " V")
+            self.accumulatorVoltage.setFont(self.font)
+
         else:
             self.data[key] = self.data[key][1:]    
             self.data[key].append(value)

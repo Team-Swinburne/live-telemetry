@@ -1,3 +1,4 @@
+from socket import timeout
 from turtle import end_fill
 import serial.tools.list_ports
 import serial
@@ -23,8 +24,9 @@ class SerialEmulator:
 
     #Opens the port at the specified baudrate
     def OpenPort(self, Port, BaudRate):
-        self.SerialConnection = serial.Serial(Port, BaudRate, timeout=0.1) 
+        self.SerialConnection = serial.Serial(Port, BaudRate, 8, 'N', 1) 
         self.SerialConnection.flushInput()
+        self.SerialConnection.flushOutput()
         #a = serial.threaded.LineReader()
 
     #Closes the port
@@ -60,7 +62,6 @@ class SerialEmulator:
                 self.rxState = 0
                 self.rxPacketCount = 0
                 self.rxPacketLength = 0
-
 
         return rxData#self.SerialConnection.readline().decode().strip()
 

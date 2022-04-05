@@ -1,4 +1,5 @@
 # main.py
+from itertools import accumulate
 import sys
 import os
 from PySide6.QtCore import *
@@ -54,12 +55,13 @@ class MainWindow(QMainWindow):
 
         self.show()
     def update(self):
+        l = 1
         # self.dashboard.updateData("Accumulator Temp",randint(0,60))
         # self.dashboard.updateData("Motor Temp",randint(2,50))
         # self.dashboard.updateData("MC Temp",randint(0,60))
         #self.dashboard.updateData("Throttle",randint(0,60))
         #self.dashboard.updateData("Brake",randint(0,60))
-        self.dashboard.updateData("Accumulator Voltage",randint(500,600))
+        #self.dashboard.updateData("Accumulator Voltage",randint(500,600))
     
     def ConnectClicked(self):
         if(self.serialTab.ConnectButton.isChecked()):
@@ -81,7 +83,6 @@ class MainWindow(QMainWindow):
             self.SerialReaderThread.terminate() #Terminate the Serial Reader thread
             self.serialTab.ConnectButton.setText("Connect")
             Serial.ClosePort()
-            self.serialTab.ComSerialOutput.setTextColor(self.GreenTextColour)
             self.serialTab.ComSerialOutput.append("SUCCESS: DISCONNECTED FROM {}".format(self.serialTab.ComPortSelect.currentText()))  
 
     #This function clears the COM viewer when the clear COM viewer button is clicked
@@ -90,11 +91,19 @@ class MainWindow(QMainWindow):
 
     #This function updates the Serial monitor with the serial data read
     def UpdateSerialMonitor(self, SerialLineRead):
-        self.serialTab.ComSerialOutput.append(SerialLineRead)
-        print(SerialLineRead)
-        self.dashboard.updateData("Accumulator Temp",int(SerialLineRead[0]))
-        self.dashboard.updateData("Motor Temp",int(SerialLineRead[q]))
-        self.dashboard.updateData("Brake",int(SerialLineRead[1]))
+        serialLine = ' '
+        for i in SerialLineRead:
+            serialLine += ' ' + str(i)
+        self.serialTab.ComSerialOutput.append(serialLine)
+        self.dashboard.updateData("Brake",int(SerialLineRead[0]))
+        self.dashboard.updateData("Throttle",int(SerialLineRead[1]))
+        self.dashboard.updateData("MC Temp",int(SerialLineRead[2]))
+        self.dashboard.updateData("Motor Temp",int(SerialLineRead[3]))
+        self.dashboard.updateData("Accumulator Temp",int(SerialLineRead[4]))
+
+        accumulateVoltage = int(((SerialLineRead[5]) * 256 + int(SerialLineRead[6]))/10)
+        self.dashboard.updateData("Accumulator Voltage",accumulateVoltage)
+
 
     def refreshClicked(self):
         self.serialTab.ComPortSelect.clear()
@@ -109,8 +118,9 @@ class WorkerThread(QThread):
             #print(LineRead)
 
             #If line read was empty then there was no data
-            if not rxData:
-                print("a")
+            if rxData:
+                #print(rxData)
+                #print("a")
                 #Transmits data to the MainWindow class
                 self.SerialLine.emit(rxData)
 

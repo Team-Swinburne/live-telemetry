@@ -1,0 +1,58 @@
+<!DOCTYPE html:5>
+<html>
+    <head>
+        <title>Real time streaming</title>
+        <style>
+            #chart { width: 100%; height: 300px; margin-top: 300px; }
+        </style>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+
+    </head>
+    <body>
+        <div class="" style="padding:20%">
+            <canvas id="mychart" width="400wv" height="400hv"></canvas>
+        </div>
+        
+        
+    </body>
+    <script>
+        const canvas = document.getElementById('mychart');
+        var el = canvas.getContext('2d');
+
+        var dataPoints = [];
+        var time = [];
+        const chart = new Chart(el, {
+            type: "line",
+            data: {
+                labels: time,
+                datasets: [{
+                    label: 'Training attendees by type',
+                    backgroundColor: 'rgb(0,0,0, 0.8)',
+                    borderColor: 'rgb(0,0,0)',
+                    borderWidth: '1',
+                    data: dataPoints
+            }],
+            options: {
+                responsive: true
+            }
+            }
+            
+        });
+        const ws = new WebSocket("ws://localhost:8000/ws");     
+        let x = 0;
+        ws.onmessage = function(event) {
+            const measurement = JSON.parse(event.data);
+            const rnd_two = JSON.parse(measurement);
+            x += 1;
+            // time.push(rnd_two.time)
+            // dataPoints.push(parseInt(rnd_two.data))
+
+            chart.data.labels.push(rnd_two.time);
+            chart.data.datasets.forEach((dataset) => {
+                dataset.data.push(parseInt(parseInt(rnd_two.data)));
+            });
+            chart.update();
+        };
+    </script>
+</html>

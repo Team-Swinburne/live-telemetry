@@ -3,6 +3,7 @@ import asyncio
 from fastapi import FastAPI
 from fastapi import Request
 from fastapi import WebSocket
+from fastapi.responses import FileResponse
 from fastapi.templating import Jinja2Templates
 
 app = FastAPI()
@@ -33,3 +34,7 @@ async def websocket_endpoint(websocket: WebSocket):
         i += 1
         print(f"Sending: {struct}")
         await websocket.send_json(json.dumps(struct))
+        
+@app.get("/favicon.ico")
+def icon():
+    return FileResponse("templates/icon.png")

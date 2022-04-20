@@ -48,6 +48,10 @@
             // time.push(rnd_two.time)
             // dataPoints.push(parseInt(rnd_two.data))
 
+            if (chart.data.datasets[0].data.length > 100) {
+                chart.shift()
+            }
+
             chart.data.labels.push(rnd_two.time);
             chart.data.datasets.forEach((dataset) => {
                 dataset.data.push(parseInt(parseInt(rnd_two.data)));

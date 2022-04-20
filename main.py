@@ -1,50 +1,35 @@
-# 
-import sys
-import os
-from PySide6.QtCore import *
-from PySide6.QtGui import *
-from PySide6.QtWidgets import *
-from PySide6.QtCharts import *
+import json, datetime
+import asyncio
+from fastapi import FastAPI
+from fastapi import Request
+from fastapi import WebSocket
+from fastapi.templating import Jinja2Templates
 
-from ui import MainDash, dashboard
+app = FastAPI()
+templates = Jinja2Templates(directory="templates")
 
-class Color(QWidget):
+import random
+randomlist = []
+for i in range(0,100):
+    n = random.randint(1,30)
+    randomlist.append(n)
 
-    def __init__(self, color):
-        super(Color, self).__init__()
-        self.setAutoFillBackground(True)
+@app.get("/")
+def read_root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
-        palette = self.palette()
-        palette.setColor(QPalette.Window, QColor(color))
-        self.setPalette(palette)
-
-
-class MainWindow(QMainWindow):
-    def __init__(self):
-        QMainWindow.__init__(self)
-
-        self.resize(1000,700)
-        self.setWindowTitle("Live Telemtry")
-
-        self.container = QFrame()
-        #self.container.setObjectName("container")
-        #self.container.setStyleSheet("#container { background-color : #222}")
-        
-        self.tabs = QTabWidget()
-        self.tabs.setTabPosition(QTabWidget.North)
-        self.tabs.setMovable(True)
-
-        for n, color in enumerate(["red", "green", "blue", "yellow"]):
-            self.tabs.addTab(Color(color), color)
-        dashboard = MainDash()
-        self.tabs.addTab(dashboard,"Dashboard")
-
-        #self.container.setLayout(self.layout)
-        self.setCentralWidget(self.tabs)
-
-        self.show()
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = MainWindow()
-    sys.exit(app.exec())
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    i = 0
+    while True:
+        struct = {
+            "time" : "",
+            "data" : 0
+        }
+        await asyncio.sleep(0.5)
+        struct["time"] = str(datetime.datetime.now())
+        struct["data"] = randomlist[i]
+        i += 1
+        print(f"Sending: {struct}")
+        await websocket.send_json(json.dumps(struct))
